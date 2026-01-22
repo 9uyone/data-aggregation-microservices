@@ -1,19 +1,20 @@
-﻿using DotNetEnv;
+﻿using Common.Config;
+using DotNetEnv;
 using DotNetEnv.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Common.Config;
+namespace Common.Extensions;
 
-public static class EnvExtensions {
-	public static IServiceCollection AddServiceUrls(this IServiceCollection services, IConfiguration config) {
-		services.Configure<ServiceUrls>(config.GetSection("ServiceUrls"));
+public static class ConfigExtensions {
+	public static IServiceCollection AddJwtOptions(this IServiceCollection services, IConfiguration config) {
+		services.Configure<JwtOptions>(config.GetSection("JWT"));
 		return services;
 	}
 
-	public static IServiceCollection AddApiSecrets(this IServiceCollection services, IConfiguration config) {
-		services.Configure<ApiSecrets>(config.GetSection("ApiSecrets"));
+	public static IServiceCollection AddGoogleOptions(this IServiceCollection services, IConfiguration config) {
+		services.Configure<GoogleOptions>(config.GetSection("GOOGLE"));
 		return services;
 	}
 

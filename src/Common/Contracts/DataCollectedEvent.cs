@@ -2,9 +2,9 @@
 
 namespace Common.Contracts;
 
-public record DataCollectedEvent(
-	string Source,
-	string DataType,
-	string Value,
-	Dictionary<string, string>? Metadata = null
-): BaseEntity;
+public class DataCollectedEvent: BaseEntity {
+	public string Source { get; set; }
+	public string DataType { get; set; }
+	public string Value { get; set; }
+	public Dictionary<string, string>? Metadata { get; set; } = null;
+};

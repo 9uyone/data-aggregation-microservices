@@ -1,4 +1,3 @@
-using Common.Config;
 using Common.Contracts;
 using Common.Extensions;
 

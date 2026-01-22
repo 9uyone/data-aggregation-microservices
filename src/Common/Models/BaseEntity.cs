@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Common.Models;
 
-public abstract record BaseEntity {
+public abstract class BaseEntity {
 	[BsonId]
 	[BsonRepresentation(BsonType.ObjectId)]
 	public string Id { get; init; } = ObjectId.GenerateNewId().ToString();

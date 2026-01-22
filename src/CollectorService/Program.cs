@@ -1,5 +1,4 @@
 using CollectorService.Interfaces;
-using Common.Config;
 using Common.Extensions;
 using Gateway.Models;
 using Gateway.Services;
@@ -25,12 +24,12 @@ app.MapPost("/ingest", async (InboundDataDto dto, IIntegrationDispatcher dispatc
 	//	return Results.BadRequest("Value is not valid");
 
 	// 2. Мапінг у Event (можна AutoMapper, але краще руками для швидкості)
-	var @event = new Common.Contracts.DataCollectedEvent(
-		Source: dto.Source,
-		DataType: dto.DataType,
-		Value: dto.Value.ToString(),
-		Metadata: dto.Metadata
-	);
+	var @event = new Common.Contracts.DataCollectedEvent {
+		Source = dto.Source,
+		DataType = dto.DataType,
+		Value = dto.Value.ToString(),
+		Metadata = dto.Metadata
+	};
 
 	await dispatcher.DispatchAsync(@event);
 	return Results.Accepted();
