@@ -11,6 +11,18 @@
 			],
 			"UpstreamPathTemplate": "/api/ingest",
 			"UpstreamHttpMethod": [ "POST" ]
+		},
+		{
+			"DownstreamPathTemplate": "/source/{src}",
+			"DownstreamScheme": "https",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 7228
+				}
+			],
+			"UpstreamPathTemplate": "/api/source/{src}",
+			"UpstreamHttpMethod": [ "GET" ]
 		}
 	],
 	"GlobalConfiguration": {

@@ -1,8 +1,10 @@
-﻿namespace Common.Contracts;
+﻿using Common.Models;
+
+namespace Common.Contracts;
 
 public record DataCollectedEvent(
-	Guid Id,
+	string Source,
+	string DataType,
 	string Value,
-	DateTime Timestamp,
 	Dictionary<string, string>? Metadata = null
-);
+): BaseEntity;

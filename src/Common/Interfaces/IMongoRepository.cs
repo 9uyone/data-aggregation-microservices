@@ -3,5 +3,5 @@
 public interface IMongoRepository<T> where T : class {
 	Task CreateAsync(T entity);
 	Task<List<T>> GetAllAsync();
-	Task<List<T>> GetBySourceAsync(string source);
+	Task<List<T>> GetBySourceAsync(string source, int? page, int? pageSize);
 }

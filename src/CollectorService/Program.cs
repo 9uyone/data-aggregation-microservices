@@ -21,14 +21,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapPost("/ingest", async (InboundDataDto dto, IIntegrationDispatcher dispatcher) => {
-	if (dto.Value < -50 || dto.Value > 100)
-		return Results.BadRequest("Value is not valid");
+	//if (dto.Value < -50 || dto.Value > 100)
+	//	return Results.BadRequest("Value is not valid");
 
 	// 2. Мапінг у Event (можна AutoMapper, але краще руками для швидкості)
 	var @event = new Common.Contracts.DataCollectedEvent(
-		Id: Guid.NewGuid(),
+		Source: dto.Source,
+		DataType: dto.DataType,
 		Value: dto.Value.ToString(),
-		Timestamp: DateTime.UtcNow,
 		Metadata: dto.Metadata
 	);
 

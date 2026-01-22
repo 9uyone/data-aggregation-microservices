@@ -20,6 +20,10 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
-app.MapGet("/get/source{id}", ());
+app.MapGet("/source/{src}", async (string src, int? page, int? pageSize, IServiceProvider sp) => {
+    var repo = sp.GetRequiredService<Common.Interfaces.IMongoRepository<DataCollectedEvent>>();
+    var results = await repo.GetBySourceAsync(src, page, pageSize);
+    return Results.Ok(results);
+});
 
 app.Run();
