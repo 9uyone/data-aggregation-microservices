@@ -1,7 +1,7 @@
 {
 	"Routes": [
 		{
-			"DownstreamPathTemplate": "/ingest",
+			"DownstreamPathTemplate": "/collector/{everything}",
 			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
@@ -9,8 +9,12 @@
 					"Port": 7221
 				}
 			],
-			"UpstreamPathTemplate": "/api/ingest",
-			"UpstreamHttpMethod": [ "POST" ]
+			"UpstreamPathTemplate": "/api/collector/{everything}",
+			"UpstreamHttpMethod": [ "POST" ],
+			"AuthenticationOptions": {
+				"AuthenticationProviderKey": "Bearer",
+				"AllowedScopes": []
+			}
 		},
 		{
 			"DownstreamPathTemplate": "/source/{src}",
@@ -23,10 +27,10 @@
 			],
 			"UpstreamPathTemplate": "/api/source/{src}",
 			"UpstreamHttpMethod": [ "GET" ],
-			/*"AuthenticationOptions": {
+			"AuthenticationOptions": {
 				"AuthenticationProviderKey": "Bearer",
 				"AllowedScopes": []
-			}*/
+			}
 		},
 		{
 			"DownstreamPathTemplate": "/auth/google",
@@ -37,7 +41,7 @@
 					"Port": 7131
 				}
 			],
-			"UpstreamPathTemplate": "/auth/google",
+			"UpstreamPathTemplate": "/api/auth/google",
 			"UpstreamHttpMethod": [ "POST" ]
 		}
 	],

@@ -28,9 +28,9 @@ public class JwtService(
 
 	public string GenerateToken(User user) {
 		var claims = new[] {
-			new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-			new Claim("name", user.Name),
+			new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+			new Claim(ClaimTypes.Email, user.Email),
+			new Claim(ClaimTypes.Name, user.Name),
 		};
 
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Key));

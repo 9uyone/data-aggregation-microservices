@@ -8,8 +8,8 @@ namespace Common.Models;
 
 public abstract class BaseEntity {
 	[BsonId]
-	[BsonRepresentation(BsonType.ObjectId)]
+	[BsonRepresentation(BsonType.String)]
 	public string Id { get; init; } = ObjectId.GenerateNewId().ToString();
 
-	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+	public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }

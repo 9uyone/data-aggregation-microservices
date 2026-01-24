@@ -1,15 +1,25 @@
+using CollectorService.Extensions;
 using CollectorService.Interfaces;
+using CollectorService.Services;
+using Common.Contracts;
 using Common.Extensions;
-using Gateway.Models;
+using Common.Interfaces;
+using Common.Models;
 using Gateway.Services;
+using Nelibur.ObjectMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Configuration.LoadFromEnvFile(builder.Environment);
+
 builder.Services.AddOpenApi();
 builder.Services.AddAppRabbit(builder.Configuration);
 builder.Services.AddScoped<IIntegrationDispatcher, IntegrationDispatcher>();
+builder.Services.AddHttpClient<IHttpRestClient, HttpRestClient>();
+builder.Services.AddParsers();
+builder.Services.AddAuthorization();
+builder.Services.AddAppAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -18,23 +28,39 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+//app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+TinyMapper.Bind<InboundDataDto, DataCollectedEvent>();
 app.MapPost("/ingest", async (InboundDataDto dto, IIntegrationDispatcher dispatcher) => {
-	//if (dto.Value < -50 || dto.Value > 100)
-	//	return Results.BadRequest("Value is not valid");
-
-	// 2. Мапінг у Event (можна AutoMapper, але краще руками для швидкості)
-	var @event = new Common.Contracts.DataCollectedEvent {
-		Source = dto.Source,
-		DataType = dto.DataType,
-		Value = dto.Value.ToString(),
-		Metadata = dto.Metadata
-	};
+	var @event = TinyMapper.Map<DataCollectedEvent>(dto);
 
 	await dispatcher.DispatchAsync(@event);
 	return Results.Accepted();
 });
 
-//app.UseHttpsRedirection();
+app.MapPost("/collector/run/{name}", async (
+	string name,
+	HttpContext httpContext,
+	IEnumerable<IDataParser> parsers,
+	IIntegrationDispatcher dispatcher) => {
+		var userId = httpContext.User.GetUserId();
+		if (userId == null)
+			return Results.Unauthorized();
+
+		var parser = parsers.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+		if (parser == null)
+			return Results.NotFound($"Парсер {name} не знайдено");
+
+		var data = await parser.ParseAsync();
+		data.UserId = userId;
+		data.ParserName = parser.Name;
+
+		await dispatcher.DispatchAsync(TinyMapper.Map<DataCollectedEvent>(data));
+		return Results.Ok(data);
+	})
+	.RequireAuthorization();
 
 app.Run();
