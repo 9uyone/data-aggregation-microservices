@@ -40,7 +40,7 @@ public class JwtService(
 			issuer: jwtOptions.Value.Issuer,
 			audience: jwtOptions.Value.Audience,
 			claims: claims,
-			expires: DateTime.UtcNow.AddHours(72),
+			expires: DateTime.UtcNow.AddHours(jwtOptions.Value.LifetimeHours),
 			signingCredentials: creds
 		);
 
