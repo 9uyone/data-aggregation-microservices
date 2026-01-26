@@ -8,4 +8,7 @@ internal class NbuRateModel {
 
 	[JsonPropertyName("exchangedate")]
 	public string ExchangeDate { get; set; }
+
+	[JsonPropertyName("cc")]
+	public string CurrencyCode { get; set; }
 }

@@ -38,5 +38,4 @@ app.MapPost("/auth/google", async (GoogleTokenRequest request, IUserService user
 	return Results.Ok(new { token });
 });
 
-
 app.Run();

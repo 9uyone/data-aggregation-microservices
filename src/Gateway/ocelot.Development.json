@@ -10,7 +10,7 @@
 				}
 			],
 			"UpstreamPathTemplate": "/api/collector/{everything}",
-			"UpstreamHttpMethod": [ "POST" ],
+			"UpstreamHttpMethod": [ "GET", "POST" ],
 			"AuthenticationOptions": {
 				"AuthenticationProviderKey": "Bearer",
 				"AllowedScopes": []

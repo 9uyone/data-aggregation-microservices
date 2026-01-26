@@ -1,4 +1,4 @@
-using CollectorService.Interfaces;
+using CollectorService.Attributes;
 using Common.Interfaces;
 using System.Reflection;
 
@@ -6,39 +6,34 @@ namespace CollectorService.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-		public static IServiceCollection AddParsers(this IServiceCollection services) {
-			// Реєструємо всі парсери автоматично
-			var parserTypes = Assembly.GetExecutingAssembly().GetTypes()
-				.Where(t => typeof(IDataParser).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+		public static IServiceCollection AddInternalParsers(this IServiceCollection services) {
+            var types = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => typeof(IDataParser).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                .Where(t => t.GetCustomAttribute<ParserInfoAttribute>() != null);
 
-			foreach (var type in parserTypes) {
-				services.AddTransient(typeof(IDataParser), type);
+            foreach (var type in types) {
+                services.AddTransient(type);
+                services.AddTransient(typeof(IDataParser), sp => sp.GetRequiredService(type));
 			}
 
 			return services;
 		}
 
-		public static IServiceCollection AddParsers(this IServiceCollection services, string pluginFolder)
-        {
-			if (!Directory.Exists(pluginFolder)) Directory.CreateDirectory(pluginFolder);
+		public static IServiceCollection AddExternalPlugins(this IServiceCollection services, string pluginsPath) {
+			if (!Directory.Exists(pluginsPath)) return services;
 
-            // Завантажуємо всі dll з папки
-            var assemblies = Directory.GetFiles(pluginFolder, "*.dll")
-                .Select(Assembly.LoadFrom)
-                .ToList();
+            var files = Directory.GetFiles(pluginsPath, "*.dll");
+            foreach (var file in files) {
+                var assembly = Assembly.LoadFrom(file);
+                var types = assembly.GetTypes()
+                    .Where(t => typeof(IDataParser).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                    .Where(t => t.GetCustomAttribute<ParserInfoAttribute>() != null);
 
-            // Додаємо до списку саму збірку Колектора (внутрішні парсери)
-            assemblies.Add(Assembly.GetExecutingAssembly());
-
-            // Шукаємо типи у ВІСІХ завантажених збірках
-            var parserTypes = assemblies.SelectMany(a => a.GetTypes())
-                .Where(t => typeof(IDataParser).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
-
-            foreach (var type in parserTypes)
-            {
-                services.AddTransient(typeof(IDataParser), type);
-            }
-
+				foreach (var type in types) {
+					services.AddTransient(type);
+					services.AddTransient(typeof(IDataParser), sp => sp.GetRequiredService(type));
+				}
+			}
             return services;
 		}
     }

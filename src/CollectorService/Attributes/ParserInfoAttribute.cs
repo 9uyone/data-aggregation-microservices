@@ -1,7 +1,12 @@
-﻿namespace CollectorService.Attributes;
+﻿using CollectorService.Interfaces;
+using Common.Enums;
+
+namespace CollectorService.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class ParserInfoAttribute(string name, string dataType): Attribute {
+public class ParserInfoAttribute(string name, string displayName, DataType type) : Attribute {
 	public string Name { get; } = name;
-	public string DataType { get; } = dataType;
+	public string DisplayName { get; } = displayName;
+	public string Description { get; } = string.Empty;
+	public DataType DataType { get; } = type;
 }

@@ -1,0 +1,45 @@
+﻿using CollectorService.Attributes;
+using CollectorService.Interfaces;
+using Common.Constants;
+using Common.Enums;
+using Common.Extensions;
+using Common.Interfaces;
+using Common.Models;
+
+namespace CollectorService.Parsers.NbuUsd;
+
+[ParserInfo("nbuCurrency", "Parses USD to UAH exchange rate from National Bank of Ukraine", DataType.Currency)]
+[ParserParameter("valcode", "Requested currency\nBy default is USD", false)]
+[ParserParameter("date", "Requested date in format YYYYMMDD.\nBy default is current", false)]
+public class NbuCurrencyParser(IHttpRestClient httpClient, ILogger<NbuCurrencyParser> logger) : IDataParser {
+	public async Task<InboundDataDto> ParseAsync(IDictionary<string, string>? parameters) {
+		var valcode = parameters.GetValueOrDefault("valcode", "USD");
+		var date = parameters.GetValueOrCompute("date", () => DateTime.UtcNow.ToString("yyyyMMdd"));
+
+		var url = $"https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode={valcode}&date={date}&json";
+		var rates = await httpClient.GetAsync<List<NbuRateModel>>(url);
+		var rate = rates?.FirstOrDefault();
+
+		if (rate == null) throw new Exception("Failed to fetch NBU rate");
+
+		return new InboundDataDto {
+			Source = "bank.gov.ua",
+			Metric = $"{valcode}_UAH",
+			Value = rate.Rate,
+			Metadata = new Dictionary<string, string>
+			{
+				["ExchangeDate"] = rate.ExchangeDate,
+				[MetadataKeys.Unit] = "UAH per " + valcode,
+				[MetadataKeys.Provider] = "National bank of Ukraine"
+			}
+		};
+	}
+
+	public async Task<IEnumerable<string>> GetLookupValuesAsync(string parameterName) {
+		if (parameterName == "valcode") {
+			var rates = await httpClient.GetAsync<List<NbuRateModel>>("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json");
+			return rates?.Select(r => r.CurrencyCode).OrderBy(c => c) ?? Enumerable.Empty<string>();
+		}
+		return Enumerable.Empty<string>();
+	}
+}
