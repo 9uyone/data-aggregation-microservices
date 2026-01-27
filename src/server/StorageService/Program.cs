@@ -8,7 +8,7 @@ builder.Services.AddOpenApi();
 builder.Configuration.LoadFromEnvFile(builder.Environment);
 builder.Services.AddAppRabbit(builder.Configuration);
 builder.Services.AddAppMongo(builder.Configuration);
-builder.Services.AddAppMongoRepository<DataCollectedEvent>("InboundData");
+builder.Services.AddAppMongoRepository<DataCollectedEvent>("collected_data");
 builder.Services.AddGlobalExceptionHandler();
 
 var app = builder.Build();
