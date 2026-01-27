@@ -6,6 +6,8 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Common.Contracts;
 
 public class DataCollectedEvent: BaseEntity {
+	public Guid CorrelationId { get; set; }
+
 	public required string ParserName { get; set; } // e.g. OpenWeatherMapParser
 	public required string UserId { get; set; } // Who requested the data
 	public required string Source { get; init; } // e.g. api.openweathermap.org
@@ -15,6 +17,5 @@ public class DataCollectedEvent: BaseEntity {
 
 	[BsonRepresentation(BsonType.String)]
 	public required DataType Type { get; set; } // "Price", "Temperature", "Stock"
-
 	public Dictionary<string, string>? Metadata { get; init; } // Additional data
 };

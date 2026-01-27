@@ -1,8 +1,4 @@
-﻿using Common.Enums;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
-namespace Common.Models;
+﻿namespace Common.Models;
 
 public class InboundDataDto {
 	public string Id { get; init; } = Guid.NewGuid().ToString();

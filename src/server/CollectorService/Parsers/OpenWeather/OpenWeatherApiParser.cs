@@ -16,7 +16,7 @@ public class WeatherParser(IHttpRestClient httpClient, IConfiguration config) : 
 		?? throw new InvalidOperationException("OpenWeather API Key is missing in configuration.");
 
 	public async Task<InboundDataDto> ParseAsync(IDictionary<string, string> parameters) {
-		var city = parameters.GetValueOrDefault("valcode", "Lviv");
+		var city = parameters.GetValueOrDefault("city", "Lviv");
 		var units = parameters.GetValueOrDefault("units", "metric");
 		var encodedCity = Uri.EscapeDataString(city);
 

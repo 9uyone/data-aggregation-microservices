@@ -1,4 +1,5 @@
 ﻿using CollectorService.Interfaces;
+using Common.Contracts;
 using Common.Exceptions;
 using MassTransit;
 
@@ -14,7 +15,9 @@ public class IntegrationDispatcher(
 
 			await publishEndpoint.Publish(message, context =>
 			{
-				// Можна додати заголовки (Headers), які потім зчитає Процесор
+				if (message is ICorrelatedMessage correlated)
+					context.CorrelationId = correlated.CorrelationId;
+
 				context.Headers.Set("SentAt", DateTime.UtcNow);
 			});
 

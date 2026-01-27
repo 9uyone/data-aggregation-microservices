@@ -15,41 +15,57 @@ public static class CollectorEndpoints {
 		var group = app.MapGroup("/collector")
 			.WithTags("Collector Service");
 
-		group.MapPost("/ingest", async (InboundDataDto dto, IIntegrationDispatcher dispatcher) => {
-			var @event = TinyMapper.Map<DataCollectedEvent>(dto);
+		group.MapPost("/ingest", async (
+			InboundDataDto dto,
+			[FromQuery] string? correlationId,
+			IIntegrationDispatcher dispatcher) =>
+		{
+			var effectiveCorrelationId = string.IsNullOrEmpty(correlationId)
+				? Guid.NewGuid().ToString()
+				: correlationId;
 
-			await dispatcher.DispatchAsync(@event);
+			var ev = TinyMapper.Map<DataCollectedEvent>(dto);
+			ev.CorrelationId = Guid.Parse(effectiveCorrelationId);
+
+			await dispatcher.DispatchAsync(ev);
 			return Results.Accepted();
 		});
 
 		group.MapPost("/run/{name}", async (
 			string name,
+			[FromQuery] string? correlationId,
 			[FromBody] IDictionary<string, string>? options,
 			IParserRegistry registry,
 			IServiceProvider sp,
 			HttpContext httpContext,
-			IIntegrationDispatcher dispatcher) => {
-				var userId = httpContext.User.GetUserId();
-				if (userId == null)
-					return Results.Unauthorized();
+			IIntegrationDispatcher dispatcher) =>
+		{
+			var effectiveCorrelationId = string.IsNullOrEmpty(correlationId)
+				? Guid.NewGuid().ToString()
+				: correlationId;
 
-				var parserType = registry.GetParserType(name);
-				if (parserType == null)
-					return Results.NotFound($"Parser '{name}' not found");
+			var userId = httpContext.User.GetUserId();
+			if (userId == null)
+				return Results.Unauthorized();
 
-				var parser = sp.GetRequiredService(parserType) as IDataParser;
-				var info = parserType.GetCustomAttribute<ParserInfoAttribute>();
-				var data = await parser.ParseAsync(options);
+			var parserType = registry.GetParserType(name);
+			if (parserType == null)
+				return Results.NotFound($"Parser '{name}' not found");
 
-				var ev = TinyMapper.Map<DataCollectedEvent>(data);
-				ev.UserId = userId;
-				ev.ParserName = info.Name;
-				ev.Type = info.DataType;
+			var parser = sp.GetRequiredService(parserType) as IDataParser;
+			var info = parserType.GetCustomAttribute<ParserInfoAttribute>();
+			var data = await parser.ParseAsync(options);
 
-				await dispatcher.DispatchAsync(ev);
-				return Results.Ok(data);
-			})
-			.RequireAuthorization();
+			var ev = TinyMapper.Map<DataCollectedEvent>(data);
+			ev.UserId = userId;
+			ev.ParserName = info.Name;
+			ev.Type = info.DataType;
+			ev.CorrelationId = Guid.Parse(effectiveCorrelationId);
+
+			await dispatcher.DispatchAsync(ev);
+			return Results.Ok(data);
+		})
+		.RequireAuthorization();
 
 		group.MapGet("/parsers", (IParserRegistry registry) => 
 			Results.Ok(registry.GetAvailableParsers())
