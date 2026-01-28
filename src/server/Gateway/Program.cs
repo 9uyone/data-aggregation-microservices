@@ -15,6 +15,17 @@ builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddProblemDetails();
 builder.Services.AddGlobalExceptionHandler();
 
+builder.Services.AddCors(options => {
+	options.AddPolicy("AllowFrontend",
+		policy => {
+			policy.WithOrigins("http://localhost:3000") // Replace with your allowed client origin
+				  .AllowAnyHeader()
+				  .AllowAnyMethod();
+				  //.AllowCredentials(); // Use with caution, often required for authenticated requests
+		});
+});
+
+
 var app = builder.Build();
 
 //app.UseHttpsRedirection();
@@ -27,6 +38,7 @@ app.Use(async (context, next) => {
 	await next();
 });
 
+app.UseCors("AllowFrontend");
 await app.UseOcelot();
 
 app.Run();
