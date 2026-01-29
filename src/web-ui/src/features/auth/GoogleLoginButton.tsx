@@ -1,20 +1,16 @@
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { Alert } from '@mui/material';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/authApi';
 import { useAuthStore } from '../../store/authStore';
 import { jwtDecode } from 'jwt-decode';
-
-interface GoogleUser {
-  sub: string;
-  email: string;
-  name: string;
-  picture?: string;
-}
+import type { GoogleUser } from '../../types/auth';
 
 export const GoogleLoginButton: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleSuccess = async (credentialResponse: CredentialResponse) => {
     setError(null);
@@ -41,6 +37,7 @@ export const GoogleLoginButton: React.FC = () => {
       };
 
       login(user, accessToken, refreshToken);
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Google login error:', err);
       setError(

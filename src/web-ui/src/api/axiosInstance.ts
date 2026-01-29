@@ -1,141 +1,132 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'; 
 
-// Create axios instance with default config
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Flag to prevent multiple refresh token requests
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
 }> = [];
 
-const processQueue = (error: AxiosError | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
+/**
+ * Resolves or rejects all queued requests waiting for a token refresh.
+ *
+ * Why: when multiple requests fail with 401 at once, we refresh only once.
+ * Other requests wait here and retry once the new token is available.
+ */
+const processQueue = (error: unknown | null, token?: string) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error || !token) {
+      reject(error ?? new Error('Token refresh failed'));
     } else {
-      prom.resolve(token);
+      resolve(token);
     }
   });
   failedQueue = [];
 };
 
-// Request interceptor - adds Authorization and X-Correlation-ID headers
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    
-    // Add Correlation ID for tracked endpoints
-    const trackedEndpoints = ['/collector/run', '/collector/ingest'];
-    const shouldTrack = trackedEndpoints.some(endpoint => config.url?.includes(endpoint));
-    if (shouldTrack) {
-        const correlationId = crypto.randomUUID();
-        
-        config.params = {
-            ...config.params,
-            correlationId: correlationId
-        };
+/**
+ * Redirects to /login after a failed refresh attempt.
+ *
+ * Why: only a failed refresh should force a full logout flow.
+ */
+const redirectToLogin = () => {
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.history.pushState(null, '', '/login');
+  }
+};
 
-        // Можна також лишити в Headers для Ocelot/логів, це не завадить
-        config.headers['X-Correlation-ID'] = correlationId;
-        
-        console.log(`[Axios] Added CorrelationId to ${config.url}: ${correlationId}`);
-    }
+/**
+ * Attaches auth header and correlation ID to outgoing requests.
+ *
+ * Why: ensures authenticated calls include Bearer token, and collector calls
+ * carry correlation IDs for traceability across microservices.
+ */
+const attachAuthAndCorrelationId = (config: InternalAxiosRequestConfig) => {
+  const { accessToken } = useAuthStore.getState();
+  if (accessToken) {
+    config.headers['Authorization'] = `Bearer ${accessToken}`;
+  }
 
-    // Add Authorization header if access token exists
-    const accessToken = useAuthStore.getState().accessToken;
-    if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
-    }
+  const trackedEndpoints = ['/collector/run', '/collector/ingest'];
+  if (trackedEndpoints.some((ep) => config.url?.includes(ep))) {
+    const correlationId = crypto.randomUUID();
+    config.params = { ...config.params, correlationId };
+    config.headers['X-Correlation-ID'] = correlationId;
+  }
 
-    return config;
-  },
-  (error) => {
+  return config;
+};
+
+/**
+ * Handles 401 responses by refreshing the access token.
+ *
+ * Why: multiple concurrent 401s should trigger only one refresh request.
+ * The failedQueue allows other requests to wait and retry with the new token.
+ */
+const handleAuthError = async (error: AxiosError) => {
+  const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+  if (error.response?.status !== 401 || originalRequest._retry) {
     return Promise.reject(error);
   }
-);
 
-// Response interceptor - handles 401 errors and token refresh
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
+  const { refreshToken, logout, setTokens } = useAuthStore.getState();
 
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Skip refresh logic for the refresh endpoint itself
-      if (originalRequest.url?.includes('/auth/refresh')) {
-        useAuthStore.getState().logout();
-        return Promise.reject(error);
-      }
-
-      if (isRefreshing) {
-        // Queue the request while refresh is in progress
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers['Authorization'] = `Bearer ${token}`;
-            return axiosInstance(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshToken = useAuthStore.getState().refreshToken;
-
-      if (!refreshToken) {
-        useAuthStore.getState().logout();
-        isRefreshing = false;
-        return Promise.reject(error);
-      }
-
-      try {
-        // Call the refresh token endpoint
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          "refreshToken": refreshToken,
-        });
-
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          response.data;
-
-        // Update tokens in the store
-        useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
-
-        // Update the Authorization header
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-
-        // Process queued requests
-        processQueue(null, newAccessToken);
-
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed - logout user
-        processQueue(refreshError as AxiosError, null);
-        useAuthStore.getState().logout();
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
+  if (originalRequest.url?.includes('/auth/refresh')) {
+    processQueue(error, undefined);
+    logout();
+    redirectToLogin();
     return Promise.reject(error);
   }
-);
+
+  if (isRefreshing) {
+    return new Promise<string>((resolve, reject) => {
+      failedQueue.push({ resolve, reject });
+    }).then((newToken) => {
+      originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+      return axiosInstance(originalRequest);
+    });
+  }
+
+  if (!refreshToken) {
+    processQueue(new Error('Missing refresh token'), undefined);
+    logout();
+    redirectToLogin();
+    return Promise.reject(error);
+  }
+
+  originalRequest._retry = true;
+  isRefreshing = true;
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+
+    setTokens(newAccessToken, newRefreshToken);
+    processQueue(null, newAccessToken);
+
+    originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+    return axiosInstance(originalRequest);
+  } catch (refreshError) {
+    processQueue(refreshError, undefined);
+    logout();
+    redirectToLogin();
+    return Promise.reject(refreshError);
+  } finally {
+    isRefreshing = false;
+  }
+};
+
+axiosInstance.interceptors.request.use(attachAuthAndCorrelationId);
+axiosInstance.interceptors.response.use((response) => response, handleAuthError);
 
 export default axiosInstance;

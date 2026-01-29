@@ -29,6 +29,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../store/authStore';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const DRAWER_WIDTH = 260;
 
@@ -56,6 +57,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -72,6 +75,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleLogout = () => {
     handleProfileMenuClose();
     logout();
+    navigate('/login', { replace: true });
   };
 
   const drawerContent = (
@@ -101,6 +105,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {navItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
+              selected={location.pathname === item.path}
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) {
+                  setMobileOpen(false);
+                }
+              }}
               sx={{
                 borderRadius: 2,
                 '&:hover': {
