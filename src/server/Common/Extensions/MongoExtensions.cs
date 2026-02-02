@@ -11,7 +11,7 @@ using System.Text.Encodings.Web;
 
 namespace Common.Extensions;
 
-public static class MognoExtensions {
+public static class MongoExtensions {
 	public static IServiceCollection AddAppMongo(this IServiceCollection services, IConfiguration config) {
 		BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
