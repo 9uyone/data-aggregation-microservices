@@ -4,7 +4,6 @@ using Common.Interfaces;
 using Common.Models;
 using StorageService.Validation;
 using MongoDB.Driver;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace StorageService.Endpoints;
 

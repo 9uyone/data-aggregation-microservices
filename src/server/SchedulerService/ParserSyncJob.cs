@@ -3,7 +3,6 @@ using Common.Contracts;
 using Common.Interfaces;
 using Common.Models;
 using Hangfire;
-using MassTransit;
 using NCrontab;
 
 namespace SchedulerService;

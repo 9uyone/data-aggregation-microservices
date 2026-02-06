@@ -2,11 +2,11 @@
 using AuthService.Interfaces;
 using AuthService.Models;
 using Common.Config;
-using Common.Exceptions;
 using Common.Interfaces;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -73,8 +73,8 @@ public class JwtAuthService(
 		if (storedToken == null || !storedToken.IsActive)
 			throw new UnauthorizedAccessException("Invalid refresh token attempt");
 
-		storedToken.IsUsed = true;
-		await rtRepo.ReplaceOneAsync(x => x.Id == storedToken.Id, storedToken);
+		var updateDef = Builders<RefreshToken>.Update.Set(x => x.IsUsed, true);
+		await rtRepo.UpdateOneAsync(x => x.Id == storedToken.Id, updateDef);
 
 		var user = await userRepo.GetByIdAsync(storedToken.UserId);
 		return await GenerateAuthResponseAsync(user);

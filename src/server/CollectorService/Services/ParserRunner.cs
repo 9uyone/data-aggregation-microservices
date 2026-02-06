@@ -5,7 +5,6 @@ using Common.Exceptions;
 using Common.Extensions;
 using Common.Interfaces.Parser;
 using Common.Models;
-using MassTransit;
 using Nelibur.ObjectMapper;
 using System.Reflection;
 
