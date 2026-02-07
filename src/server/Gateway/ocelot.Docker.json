@@ -13,7 +13,7 @@
 			"UpstreamHttpMethod": [ "GET", "POST" ]
 		},
 		{
-			"DownstreamPathTemplate": "/source/{src}",
+			"DownstreamPathTemplate": "/storage/{everything}",
 			"DownstreamScheme": "http",
 			"DownstreamHostAndPorts": [
 				{
@@ -21,23 +21,7 @@
 					"Port": 8080
 				}
 			],
-			"UpstreamPathTemplate": "/api/source/{src}",
-			"UpstreamHttpMethod": [ "GET" ],
-			"AuthenticationOptions": {
-				"AuthenticationProviderKey": "Bearer",
-				"AllowedScopes": []
-			}
-		},
-		{
-			"DownstreamPathTemplate": "/parser-cfg/{everything}",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "storage",
-					"Port": 8080
-				}
-			],
-			"UpstreamPathTemplate": "/api/parser-cfg/{everything}",
+			"UpstreamPathTemplate": "/api//storage/{everything}",
 			"UpstreamHttpMethod": [ "GET", "POST", "PATCH", "DELETE" ],
 			"AuthenticationOptions": {
 				"AuthenticationProviderKey": "Bearer",

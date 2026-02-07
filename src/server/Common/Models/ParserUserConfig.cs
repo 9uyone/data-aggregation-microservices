@@ -15,4 +15,6 @@ public class ParserUserConfig: BaseEntity {
 	public IDictionary<string, string> Options { get; init; } = new Dictionary<string, string>();
 
 	public DateTime? LastRunUtc { get; set; }
+	public bool? LastStatus { get; set; }
+	public string? LastErrorMessage { get; set; }
 }
