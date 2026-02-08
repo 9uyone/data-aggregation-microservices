@@ -21,6 +21,7 @@ builder.Services.AddAppMongoRepository<RefreshToken>(MongoCollections.RefreshTok
 builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddGlobalExceptionHandler();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddScoped<IJwtAuthService, JwtAuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -31,6 +32,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
+app.UseHealthChecks("/health");
 
 app.UseAuthentication();
 app.UseAuthorization();

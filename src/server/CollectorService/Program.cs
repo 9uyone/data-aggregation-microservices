@@ -21,10 +21,10 @@ builder.Services.AddHttpClient<IHttpRestClient, HttpRestClient>();
 builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddGlobalExceptionHandler();
 builder.Services.AddScoped<IParserRunner, ParserRunner>();
-
 builder.Services.AddSingleton<IParserRegistry, ParserRegistry>();
 builder.Services.AddInternalParsers();
 //builder.Services.AddExternalPlugins(Path.Combine(builder.Environment.ContentRootPath, "plugins"));
+builder.Services.AddHealthChecks();
 
 TinyMapper.Bind<InboundDataDto, DataCollectedEvent>();
 
@@ -37,6 +37,8 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseExceptionHandler();
+app.UseHealthChecks("/health");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

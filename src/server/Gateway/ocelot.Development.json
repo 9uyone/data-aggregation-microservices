@@ -1,5 +1,55 @@
 {
 	"Routes": [
+		// Health checks
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "https",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 7131
+				}
+			],
+			"UpstreamPathTemplate": "/health/auth",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "https",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 7221
+				}
+			],
+			"UpstreamPathTemplate": "/health/collector",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "https",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 7053
+				}
+			],
+			"UpstreamPathTemplate": "/health/scheduler",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "https",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 7228
+				}
+			],
+			"UpstreamPathTemplate": "/health/storage",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+
 		{
 			"DownstreamPathTemplate": "/collector/{everything}",
 			"DownstreamScheme": "https",
@@ -54,7 +104,7 @@
 				}
 			],
 			"UpstreamPathTemplate": "/hangfire/{everything}",
-			"UpstreamHttpMethod": [ "POST", "GET", "PUT", "DELETE" ],
+			"UpstreamHttpMethod": [ "POST", "GET", "PUT", "DELETE" ]
 		}
 	],
 	"GlobalConfiguration": {

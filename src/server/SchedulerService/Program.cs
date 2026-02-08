@@ -15,10 +15,12 @@ builder.Services.AddAppMongoRepository<ParserUserConfig>(MongoCollections.Parser
 builder.Services.AddGlobalExceptionHandler();
 builder.Services.AddScoped<IIntegrationDispatcher, IntegrationDispatcher>();
 builder.Services.AddAppHangfire();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseHealthChecks("/health");
 app.UseHangfireDashboard();
 
 RecurringJob.AddOrUpdate<ParserSyncJob>(

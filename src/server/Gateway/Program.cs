@@ -38,6 +38,7 @@ app.Use(async (context, next) => {
 });
 
 app.UseCors("AllowFrontend");
+
 await app.UseOcelot();
 
 app.Run();

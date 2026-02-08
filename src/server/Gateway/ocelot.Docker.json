@@ -1,5 +1,55 @@
 {
 	"Routes": [
+		// Health checks
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "auth",
+					"Port": 8080
+				}
+			],
+			"UpstreamPathTemplate": "/health/auth",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "collector",
+					"Port": 8080
+				}
+			],
+			"UpstreamPathTemplate": "/health/collector",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "scheduler",
+					"Port": 8080
+				}
+			],
+			"UpstreamPathTemplate": "/health/scheduler",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+		{
+			"DownstreamPathTemplate": "/health",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "storage",
+					"Port": 8080
+				}
+			],
+			"UpstreamPathTemplate": "/health/storage",
+			"UpstreamHttpMethod": [ "GET" ]
+		},
+
 		{
 			"DownstreamPathTemplate": "/collector/{everything}",
 			"DownstreamScheme": "http",
@@ -21,7 +71,7 @@
 					"Port": 8080
 				}
 			],
-			"UpstreamPathTemplate": "/api//storage/{everything}",
+			"UpstreamPathTemplate": "/api/storage/{everything}",
 			"UpstreamHttpMethod": [ "GET", "POST", "PATCH", "DELETE" ],
 			"AuthenticationOptions": {
 				"AuthenticationProviderKey": "Bearer",

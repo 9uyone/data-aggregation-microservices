@@ -12,6 +12,7 @@ builder.Services.AddAppRabbit(builder.Configuration);
 builder.Services.AddGlobalExceptionHandler();
 builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddAppMongo(builder.Configuration);
 builder.Services.AddAppMongoRepository<DataCollectedEvent>(MongoCollections.CollectedData);
@@ -25,6 +26,7 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
+app.UseHealthChecks("/health");
 
 app.UseAuthentication();
 app.UseAuthorization();
