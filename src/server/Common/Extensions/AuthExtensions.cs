@@ -9,9 +9,19 @@ using System.Text;
 namespace Common.Extensions;
 
 public static class AuthExtensions {
-	public static string? GetUserId(this ClaimsPrincipal user) {
-		return user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-			?? throw new UnauthorizedAccessException("User ID not found in token");
+	public static Guid GetUserId(this ClaimsPrincipal user) {
+		if (user?.Identity?.IsAuthenticated != true)
+			throw new UnauthorizedAccessException("User is not authenticated");
+
+		var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		
+		if (string.IsNullOrEmpty(userIdClaim))
+			throw new UnauthorizedAccessException("User ID claim not found in token");
+
+		if(!Guid.TryParse(userIdClaim, out Guid userId))
+			throw new UnauthorizedAccessException("Cannot parse UserId");
+
+		return userId;
 	}
 
 	public static IServiceCollection AddAppAuthentication(this IServiceCollection services, IConfiguration config) {

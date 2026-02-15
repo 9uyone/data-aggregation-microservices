@@ -8,15 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Configuration.LoadFromEnvFile(builder.Environment);
+
+builder.Services.AddAppMongo(builder.Configuration);
+builder.Services.AddAppMongoRepository<DataCollectedEvent>(MongoCollections.CollectedData);
+builder.Services.AddAppMongoRepository<ParserUserConfig>(MongoCollections.ParserUserConfigs);
+
 builder.Services.AddAppRabbit(builder.Configuration);
 builder.Services.AddGlobalExceptionHandler();
 builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
-
-builder.Services.AddAppMongo(builder.Configuration);
-builder.Services.AddAppMongoRepository<DataCollectedEvent>(MongoCollections.CollectedData);
-builder.Services.AddAppMongoRepository<ParserUserConfig>(MongoCollections.ParserUserConfigs);
 
 var app = builder.Build();
 
@@ -32,6 +33,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapParserConfigEndpoints();
-//app.MapCollectedDataEndpoints();
+app.MapCollectedDataEndpoints();
 
 app.Run();

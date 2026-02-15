@@ -1,7 +1,10 @@
-﻿namespace Common.Models;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace Common.Models;
 
 public class ParserUserConfig: BaseEntity {
-	public string UserId { get; init; } = string.Empty;
+	public Guid UserId { get; init; } = Guid.Empty;
 
 	// from /collector/run/{name}
 	public string ParserName { get; init; } = string.Empty;

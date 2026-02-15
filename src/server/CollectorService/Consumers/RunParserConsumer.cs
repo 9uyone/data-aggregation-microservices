@@ -14,7 +14,7 @@ public class RunParserConsumer(IParserRunner runner, ILogger<RunParserCommand> l
 
 			if (msg.ConfigId is not null)
 				await context.Publish(new ParserStatusUpdatedEvent {
-					ConfigId = msg.ConfigId,
+					ConfigId = msg.ConfigId.Value,
 					IsSuccess = true,
 					FinishedAtUtc = DateTime.UtcNow
 				});
@@ -24,7 +24,7 @@ public class RunParserConsumer(IParserRunner runner, ILogger<RunParserCommand> l
 		catch (Exception ex) {
 			if (msg.ConfigId is not null)
 				await context.Publish(new ParserStatusUpdatedEvent {
-					ConfigId = msg.ConfigId,
+					ConfigId = msg.ConfigId.Value,
 					IsSuccess = false,
 					ErrorMessage = ex.Message,
 					FinishedAtUtc = DateTime.UtcNow

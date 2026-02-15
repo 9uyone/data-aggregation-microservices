@@ -12,13 +12,13 @@ public class CachedMongoRepository<T>(
 	public Task<T> CreateAsync(T entity) =>
 		inner.CreateAsync(entity);
 
-	public Task<List<T>> FindAsync(Expression<Func<T, bool>> filter) =>
-		inner.FindAsync(filter);
+	public Task<List<T>> FindAsync(Expression<Func<T, bool>> filter, int? page, int? pageSize, bool? oldFirst) =>
+		inner.FindAsync(filter, page, pageSize, oldFirst);
 
 	public Task<List<T>> GetAllAsync() =>
 		inner.GetAllAsync();
 
-	public async Task<T> GetByIdAsync(string id) {
+	public async Task<T> GetByIdAsync(Guid id) {
 		var key = $"{typeof(T).Name}:{id}";
 		var cached = await cache.GetStringAsync(key);
 
@@ -32,9 +32,6 @@ public class CachedMongoRepository<T>(
 		}
 		return entity!;
 	}
-
-	public Task<List<T>> GetBySourceAsync(string source, int? page, int? pageSize) =>
-		inner.GetBySourceAsync(source, page, pageSize);
 
 	public async Task ReplaceOneAsync(Expression<Func<T, bool>> filter, T entity) {
 		await inner.ReplaceOneAsync(filter, entity);

@@ -8,11 +8,15 @@ public static class CorrelationExtensions {
 	/// </summary>
 	public static Guid EnsureCorrelationId(this Guid? correlationId)
 		=> correlationId == null || correlationId.Value == Guid.Empty
-			? NewId.NextGuid()
-            : correlationId.Value;
+			? GenCorrelationId()
+			: correlationId.Value;
 
 	public static Guid EnsureCorrelationId(this Guid correlationId)
 		=> correlationId == Guid.Empty
-			? NewId.NextGuid()
+			? GenCorrelationId()
 			: correlationId;
+
+	extension(Guid guid) {
+		public static Guid GenCorrelationId() => NewId.NextGuid();
+	}
 }

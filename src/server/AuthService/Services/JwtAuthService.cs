@@ -54,7 +54,7 @@ public class JwtAuthService(
 	}
 
 	public async Task<AuthResponse> GenerateAuthResponseAsync(User user) {
-		var accessToken = GenerateAccessToken(user.Id, user.Email, user.Name, user?.AvatarUrl);
+		var accessToken = GenerateAccessToken(user.Id.ToString(), user.Email, user.Name, user?.AvatarUrl);
 		var refreshToken = Guid.NewGuid().ToString();
 
 		await rtRepo.CreateAsync(new RefreshToken {

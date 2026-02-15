@@ -1,6 +1,6 @@
 ﻿using CollectorService.Interfaces;
-using CollectorService.Services;
 using Common.Contracts;
+using Common.Contracts.Parser;
 using Common.Extensions;
 using Common.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,21 +34,23 @@ public static class CollectorEndpoints {
 			[FromQuery] Guid? correlationId,
 			[FromBody] IDictionary<string, string>? options,
 			IParserRegistry registry,
-			IParserRunner parserRunner,
-			HttpContext httpContext
-			) =>
+			IIntegrationDispatcher dispatcher,
+			HttpContext httpContext) =>
 		{
 			var userId = httpContext.User.GetUserId();
-			var result = await parserRunner.ExecuteAsync(new RunParserCommand{ 
-				ParserName = name, 
-				UserId = userId!,
-				Options = options, 
-				CorrelationId = correlationId.EnsureCorrelationId(),
-			});
 
-			return Results.Ok(result);
-		})
-		.RequireAuthorization();
+			var command = new RunParserCommand {
+				ParserName = name,
+				UserId = userId!,
+				Options = options,
+				CorrelationId = Guid.GenCorrelationId(),
+			};
+
+			await dispatcher.DispatchAsync(command);
+			return Results.Ok(new ParserRunResult { 
+				CorrelationId = command.CorrelationId.Value
+			});
+		}).RequireAuthorization();
 
 		group.MapGet("/parsers", (IParserRegistry registry) => 
 			Results.Ok(registry.GetAvailableParsers())

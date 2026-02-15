@@ -1,5 +1,6 @@
 ﻿using CollectorService.Interfaces;
 using Common.Contracts;
+using Common.Contracts.Parser;
 using Common.Extensions;
 using Common.Interfaces;
 using Common.Models;
@@ -47,7 +48,7 @@ public static partial class StorageEndpoints {
 
 		// Get by id
 		group.MapGet("/{id}", async (
-			string id,
+			Guid id,
 			IMongoRepository<ParserUserConfig> repo,
 			HttpContext httpContext) => {
 				var userId = httpContext.User.GetUserId()!;
@@ -61,7 +62,7 @@ public static partial class StorageEndpoints {
 
 		// Update
 		group.MapPatch("/{id}", async (
-			string id,
+			Guid id,
 			ParserUserConfigPatchDto dto,
 			IMongoRepository<ParserUserConfig> repo,
 			HttpContext httpContext,
@@ -96,7 +97,7 @@ public static partial class StorageEndpoints {
 
 		// Delete
 		group.MapDelete("/{id}", async (
-			string id,
+			Guid id,
 			IMongoRepository<ParserUserConfig> repo,
 			HttpContext httpContext) => {
 				var userId = httpContext.User.GetUserId()!;
@@ -109,22 +110,23 @@ public static partial class StorageEndpoints {
 			}).RequireAuthorization();
 
 		group.MapPost("/{id}/run", async (
-			string id,
+			Guid id,
 			IMongoRepository<ParserUserConfig> repo,
 			IIntegrationDispatcher dispatcher) => {
-				var config = await repo.GetByIdAsync(id.ToString());
+				var config = await repo.GetByIdAsync(id);
 				if (config == null) return Results.NotFound();
 
 				var command = new RunParserCommand {
 					ConfigId = config.Id,
 					ParserName = config.ParserName,
 					UserId = config.UserId,
-					Options = config.Options
+					Options = config.Options,
+					CorrelationId = Guid.GenCorrelationId(),
 				};
 
 				await dispatcher.DispatchAsync(command);
-				return Results.Ok(new { 
-					CorrelationId = command.CorrelationId.EnsureCorrelationId() 
+				return Results.Accepted(value: new ParserRunResult { 
+					CorrelationId = command.CorrelationId.Value
 				});
 			}).RequireAuthorization();
 	}

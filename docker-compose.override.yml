@@ -13,6 +13,7 @@ services:
       ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO__USER}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO__PASS}
+      ME_CONFIG_MONGODB_AUTH_DATABASE: admin
       # default admin:pass
       #ME_CONFIG_BASICAUTH_USERNAME: someUserName # For browser login
       #ME_CONFIG_BASICAUTH_PASSWORD: somePassword # For browser login
