@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.2" />
     <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
     <PackageReference Include="NCrontab.Signed" Version="3.4.0" />
+    <PackageReference Include="TinyMapper" Version="3.0.3" />
   </ItemGroup>
 
   <ItemGroup>

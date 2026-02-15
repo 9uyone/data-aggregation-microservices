@@ -2,15 +2,19 @@
 using Common.Extensions;
 using Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Nelibur.ObjectMapper;
+using Storage.Contracts;
 
 namespace StorageService.Endpoints;
 
 public static partial class StorageEndpoints {
 	public static void MapCollectedDataEndpoints(this IEndpointRouteBuilder app) {
+		TinyMapper.Bind<List<DataCollectedEvent>, List<DataResultDto>>();
+
 		var group = app.MapGroup("/storage/collected")
 			.WithTags("Collected data");
 
-		group.MapGet("/results", async (
+		group.MapGet("/", async (
 			HttpContext httpContext,
 			[FromQuery]Guid? correlationId,
 			[FromQuery] Guid? configId,
@@ -24,19 +28,22 @@ public static partial class StorageEndpoints {
 					(correlationId == null || x.CorrelationId == correlationId),
 					page, pageSize, oldFirst);
 
-				return Results.Ok(results);
+				return Results.Ok(
+					TinyMapper.Map<List<DataResultDto>>(results)
+				);
 			}).RequireAuthorization();
 
-		group.MapGet("/result/{id}", async (
+		group.MapGet("/{id}", async (
 			HttpContext httpContext,
-			[FromQuery] Guid? id,
+			Guid id,
 			IMongoRepository<DataCollectedEvent> repo) => {
 				var result = await repo.FindAsync(filter: x =>
-					x.UserId == httpContext.User.GetUserId());
+					x.UserId == httpContext.User.GetUserId()
+					&& x.Id == id);
 
-				if (result == null || result.Count == 0)
-					return Results.NotFound();
-				return Results.Ok(result[0]);
+				return Results.Ok(
+					TinyMapper.Map<List<DataResultDto>>(result)
+				);
 			}).RequireAuthorization();
 	}
 }
