@@ -20,7 +20,6 @@ services:
       #- processor
       - scheduler
       - storage
-
     networks:
       - public
       - internal
@@ -32,8 +31,10 @@ services:
       context: ./src/server
       dockerfile: AuthService/Dockerfile
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - internal
     env_file: .env
@@ -45,7 +46,8 @@ services:
       context: ./src/server
       dockerfile: CollectorService/Dockerfile
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - internal
     env_file: .env
@@ -56,9 +58,9 @@ services:
   #   build:
   #     context: ./src/server
   #     dockerfile: CollectorService/Dockerfile
-    
   #   depends_on:
-  #     - rabbitmq
+  #     rabbitmq:
+  #       condition: service_healthy
   #   networks:
   #     - internal
   #   env_file: .env
@@ -70,8 +72,10 @@ services:
       context: ./src/server
       dockerfile: SchedulerService/Dockerfile
     depends_on:
-      - rabbitmq
-      - mongo
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     networks:
       - internal
     env_file: .env
@@ -83,8 +87,10 @@ services:
       context: ./src/server
       dockerfile: StorageService/Dockerfile
     depends_on:
-      - rabbitmq
-      - mongo
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     networks:
       - internal
     env_file: .env
@@ -102,11 +108,15 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
     container_name: diploma-mongo
     image: mongo:8.0
-    #restart: always
     ports:
       - "${MONGO__PORT}:27017"
     environment:
@@ -117,19 +127,31 @@ services:
       - public
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')", "-u", "${MONGO__USER}", "-p", "${MONGO__PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     container_name: diploma-redis
     image: redis:alpine
     ports:
       - "${REDIS__PORT}:6379"
-    command: >
-      redis-server --requirepass ${REDIS__PASS}
-      volumes:
-        - redis_data:/data
-      
+    command: redis-server --requirepass ${REDIS__PASS}
+    networks:
+      - internal
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS__PASS}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   mongo_data:
+  redis_data:
 
 networks:
   public:
