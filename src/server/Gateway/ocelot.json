@@ -50,6 +50,19 @@
 			"UpstreamHttpMethod": [ "GET" ]
 		},
 
+		// Other routes
+		{
+			"DownstreamPathTemplate": "/auth/{everything}",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "auth",
+					"Port": 8080
+				}
+			],
+			"UpstreamPathTemplate": "/api/auth/{everything}",
+			"UpstreamHttpMethod": [ "POST", "GET" ]
+		},
 		{
 			"DownstreamPathTemplate": "/collector/{everything}",
 			"DownstreamScheme": "http",
@@ -77,18 +90,6 @@
 				"AuthenticationProviderKey": "Bearer",
 				"AllowedScopes": []
 			}
-		},
-		{
-			"DownstreamPathTemplate": "/auth/{everything}",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "auth",
-					"Port": 8080
-				}
-			],
-			"UpstreamPathTemplate": "/api/auth/{everything}",
-			"UpstreamHttpMethod": [ "POST", "GET" ]
 		}
 	],
 	"GlobalConfiguration": {

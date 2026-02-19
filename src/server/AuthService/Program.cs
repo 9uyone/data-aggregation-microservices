@@ -14,9 +14,9 @@ builder.Services.AddGoogleOptions(builder.Configuration);
 
 // db
 builder.Services.AddAppMongo(builder.Configuration);
-//builder.Services.AddAppMongoRepository<User>(MongoCollections.Users);
 builder.Services.AddRedisCache(builder.Configuration);
 builder.Services.AddCachedMongoRepository<User>(MongoCollections.Users);
+//builder.Services.AddAppMongoRepository<User>(MongoCollections.Users);
 builder.Services.AddAppMongoRepository<RefreshToken>(MongoCollections.RefreshTokens);
 
 builder.Services.AddAppAuthentication(builder.Configuration);
@@ -31,7 +31,6 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.UseHealthChecks("/health");
 

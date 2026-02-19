@@ -5,8 +5,9 @@ using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load config
-builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true);
+// config
+builder.Configuration.AddOcelot();
+builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: true);
 builder.Configuration.LoadFromEnvFile(builder.Environment);
 
 // Register services
@@ -39,6 +40,8 @@ app.Use(async (context, next) => {
 });
 
 app.UseCors("AllowFrontend");
+
+var ocelotConfig = builder.Configuration.GetSection("Routes").Get<List<RouteOptions>>();
 
 await app.UseOcelot();
 

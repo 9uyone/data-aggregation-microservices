@@ -2,105 +2,80 @@
 	"Routes": [
 		// Health checks
 		{
-			"DownstreamPathTemplate": "/health",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7131
+					"Port": 5065
 				}
 			],
-			"UpstreamPathTemplate": "/health/auth",
-			"UpstreamHttpMethod": [ "GET" ]
+			"UpstreamPathTemplate": "/health/auth"
 		},
 		{
-			"DownstreamPathTemplate": "/health",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7221
+					"Port": 5139
 				}
 			],
-			"UpstreamPathTemplate": "/health/collector",
-			"UpstreamHttpMethod": [ "GET" ]
+			"UpstreamPathTemplate": "/health/collector"
 		},
 		{
-			"DownstreamPathTemplate": "/health",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7053
+					"Port": 5133
 				}
 			],
-			"UpstreamPathTemplate": "/health/scheduler",
-			"UpstreamHttpMethod": [ "GET" ]
+			"UpstreamPathTemplate": "/health/scheduler"
 		},
 		{
-			"DownstreamPathTemplate": "/health",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7228
+					"Port": 5044
 				}
 			],
-			"UpstreamPathTemplate": "/health/storage",
-			"UpstreamHttpMethod": [ "GET" ]
+			"UpstreamPathTemplate": "/health/storage"
 		},
 
-		{
-			"DownstreamPathTemplate": "/collector/{everything}",
-			"DownstreamScheme": "https",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "localhost",
-					"Port": 7221
-				}
-			],
-			"UpstreamPathTemplate": "/api/collector/{everything}",
-			"UpstreamHttpMethod": [ "GET", "POST" ]
-			//"AuthenticationOptions": {
-			//	"AuthenticationProviderKey": "Bearer",
-			//	"AllowedScopes": []
-			//}
-		},
-		{
-			"DownstreamPathTemplate": "/storage/{everything}",
-			"DownstreamScheme": "https",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "localhost",
-					"Port": 7228
-				}
-			],
-			"UpstreamPathTemplate": "/api/storage/{everything}",
-			"UpstreamHttpMethod": [ "GET", "POST", "PATCH", "DELETE" ],
-			"AuthenticationOptions": {
-				"AuthenticationProviderKey": "Bearer",
-				"AllowedScopes": []
-			}
-		},
+		// Other routes
 		{
 			"DownstreamPathTemplate": "/auth/{everything}",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7131
+					"Port": 5065
 				}
 			],
-			"UpstreamPathTemplate": "/api/auth/{everything}",
-			"UpstreamHttpMethod": [ "POST", "GET" ]
+			"UpstreamPathTemplate": "/api/auth/{everything}"
 		},
 		{
-			"DownstreamPathTemplate": "/hangfire/{everything}",
-			"DownstreamScheme": "https",
 			"DownstreamHostAndPorts": [
 				{
 					"Host": "localhost",
-					"Port": 7053
+					"Port": 5139
+				}
+			],
+			"UpstreamPathTemplate": "/api/collector/{everything}"
+		},
+		{
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 5044
+				}
+			],
+			"UpstreamPathTemplate": "/api/storage/{everything}"
+		},
+
+		// Local only
+		{
+			"DownstreamPathTemplate": "/hangfire/{everything}",
+			"DownstreamScheme": "http",
+			"DownstreamHostAndPorts": [
+				{
+					"Host": "localhost",
+					"Port": 5133
 				}
 			],
 			"UpstreamPathTemplate": "/hangfire/{everything}",
